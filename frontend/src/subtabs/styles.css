@@ -1,0 +1,66 @@
+/* styles.css */
+
+/* Styling for the heading */
+.sleek-heading {
+  font-size: 1.5rem;  /* Slightly larger font for better visibility */
+  letter-spacing: 0.5px;  /* Modern letter spacing */
+  font-family: 'Roboto', sans-serif;  /* Sleek and modern font */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);  /* Subtle shadow for depth */
+  color: #34495e;  /* Matching color with formula box */
+  margin-bottom: 1rem;  /* Spacing below the heading */
+}
+
+/* Formula box styling */
+.formula-box {
+  font-family: "Courier New", monospace;
+  font-size: 1.2rem;
+  color: #34495e;
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.6;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
+}
+
+/* Center the compute button container */
+.compute-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;  /* Space from previous content */
+}
+
+/* Compute button styling */
+.compute-button {
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 20px;  /* Smoother, sleeker roundness */
+  text-transform: none;
+  box-shadow: none;
+  border: 2px solid #00bcd4;  /* Light blue border */
+  background-color: transparent; /* Clear background */
+  color: #00bcd4; /* Light blue text color */
+  transition: all 0.3s ease-in-out;
+}
+
+.compute-button:hover {
+  background-color: #b2ebf2;  /* Light blue background on hover */
+  color: white;
+  border-color: #00bcd4;
+}
+
+.table-container {
+  margin-top: 1rem;
+}
+
+.table-button {
+  margin-top: 1rem;
+}
+
+.filter-button {
+  margin-top: 2rem;
+}

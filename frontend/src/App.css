@@ -1,0 +1,294 @@
+
+/* Overall app background */
+body {
+  background-color: #f5faff; /* Subtle light blue */
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  color: #333;
+}
+
+/* Top Bar */
+.top-bar {
+  width: 100%;
+  height: 60px;
+  background-color: #dfe6f2; /* Same as canvas */
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #2c3e50;
+  box-shadow: none; /* subtle, remove heavy shadow if any */
+  border-bottom: 1px solid #ccc;
+}
+
+.logi-text {
+  color: #2ecc71; /* soft green */
+  margin-right: 2px;
+}
+
+.dex-text {
+  color: #e74c3c; /* nice red */
+}
+
+/* Main content padding to avoid the fixed top bar */
+.main-content {
+  margin-top: 60px; /* Space for the top bar */
+}
+
+/* Use Tool Page Styles */
+.use-tool-page {
+    height: 100vh;
+    width: 100%;
+    position: relative;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    padding: 40px;
+    gap: 20px;
+    box-sizing: border-box;
+  }
+
+  .left-toolbar {
+    width: 120px;
+    height: 400px;
+    background-color: #f7fbfd;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden; 
+  }
+  
+  .reset-toolbar-top {
+    position: sticky;
+    top: 0;
+    background-color: #f7fbfd;
+    z-index: 1;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .scrollable-toolbar {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+  }
+
+
+  
+  .scrollable-toolbar::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 4px;
+  }
+  
+  .reset-toolbar-top .toolbar-button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+.toolbar-button {
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #bbb;
+        background-color: white;
+        cursor: pointer;
+        transition: 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 50px;
+}
+
+.toolbar-button.selected {
+    background-color: #d0eaff;
+    border: 2px solid #2196f3;
+}
+      
+.toolbar-button.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+.gate-button {
+    padding: 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+    
+.gate-button img {
+    width: 24px;
+    height: 24px;
+    }
+    
+.toolbar-button:hover {
+        background-color: #e6f0ff;
+        border-color: #2196f3;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    }
+/* Canvas container */
+.canvas-container {
+    width: 80%;  
+    height: 420px;
+    flex-direction: row;
+    flex: 3;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    background-color: #dfe6f2;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.canvas-container .react-flow__node {
+  background-color: #e3e8f3; /* Slightly darker nodes */
+  color: #2c3e50; /* Dark text inside nodes */
+}
+
+.canvas-container .react-flow__edge {
+  stroke: #2c3e50; /* Dark edges for connections */
+}
+
+.compute-section {
+        width: 80%;
+      }
+
+    /* Compute Tabs Styling */
+.compute-tabs {
+    display: flex;
+    width: 100%;
+    position: relative;
+  }
+  
+  .compute-tabs .MuiTab-root {
+    flex: 1;
+    font-weight: bold;
+  }
+  
+  /* Indicator classes */
+.compute-tabs .MuiTabs-indicator {
+  width: 50% !important;
+  left: 0 !important;
+  transition: left 0.3s ease;
+  background-color: #2196f3;
+  height: 3px;
+}
+  .compute-tabs .MuiTabs-indicator.active-tab-1 {
+    left: 50% !important;
+  }
+  
+  .formula-section {
+    flex: 1.3;
+    width: 100%;
+    height: 420px;
+    max-width: 480px;
+    background-color: #f7fbfd;
+    border-radius: 12px;
+    padding: 20px; 
+    margin-top: 0rem;
+    font-family: 'Roboto', sans-serif;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+  }
+
+.formula-section h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #2c3e50;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem; 
+}
+
+.formula-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  resize: none;
+  font-family: 'Roboto Mono', monospace;
+  background-color: #fff;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+  transition: border-color 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+.formula-textarea:focus {
+  border-color: #1976d2;
+  outline: none;
+}
+
+.formula-textarea::placeholder {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 14px;
+  color: #888;
+  line-height: 1.5;
+  white-space: pre-line; /* ✅ preserves \n line break */
+}
+
+.formula-submit-button {
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 20px; /* ✅ subtle rounded edges */
+  text-transform: none;
+  box-shadow: none;
+  border: 2px solid #00bcd4;
+  background-color: transparent;
+  color: #00bcd4;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.formula-submit-button:hover {
+  background-color: #b2ebf2;
+  color: white;
+  border-color: #00bcd4;
+}
+
+.error-box {
+  margin-top: 10px;
+  padding: 10px 15px;
+  background-color: #ffe0e0;
+  color: #d8000c;
+  border: 1px solid #f5c2c2;
+  border-radius: 6px;
+  font-size: 14px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
