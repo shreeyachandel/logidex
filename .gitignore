@@ -26,5 +26,5 @@ npm-debug.log*
 .vscode/
 .vercel/
 
-# The source dissertation contains a student identifier.
+# The tracked copy uses a portfolio-friendly filename under docs/.
 Undergrad Thesis.pdf

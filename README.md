@@ -2,7 +2,7 @@
 
 **An interactive workspace for building logic circuits and moving between circuit diagrams, truth tables, and propositional formulas.**
 
-**[Try LogiDex live →](https://logidex.vercel.app)**
+**[Try LogiDex live →](https://logidex-one.vercel.app/) · [Read the dissertation →](docs/LogiDex-Dissertation.pdf)**
 
 LogiDex turns abstract Boolean logic into something learners can manipulate. Users can draw circuits from seven standard gate types or enter a formula and generate a neatly arranged circuit automatically. The same circuit can then be explored as a live signal flow, a filterable truth table, or a step-by-step CNF/DNF reduction.
 
@@ -92,6 +92,7 @@ frontend/src/config/ Gate definitions and shared constants
 frontend/src/hooks/  Circuit editor state and interactions
 frontend/src/utils/  Validation, serialization, and layout algorithms
 scripts/             Cross-platform setup and run commands
+docs/                 Demo media and the original dissertation
 app.py               Vercel Flask entry point
 vercel.json          Vercel build configuration
 ```
@@ -140,7 +141,7 @@ The current portfolio release has also been checked with the full automated test
 
 ## Privacy and academic context
 
-LogiDex does not require accounts or a database. Circuit information is processed for the current request and is not intentionally persisted by the backend. The original dissertation PDF is deliberately excluded from this public repository because its cover contains a student identifier; a redacted technical report can be added separately.
+LogiDex does not require accounts or a database. Circuit information is processed for the current request and is not intentionally persisted by the backend. The original dissertation is included as supporting documentation for the project's research, design, implementation, and evaluation.
 
 ## Future work
 
