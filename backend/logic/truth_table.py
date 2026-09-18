@@ -1,137 +1,122 @@
-from itertools import product
+"""Evaluate circuit graphs and generate their complete truth tables."""
+
+from __future__ import annotations
+
 from collections import deque
+from itertools import product
+
+
+def build_graph(circuit_data):
+    """Build an adjacency representation and validate connection references."""
+    nodes = circuit_data["nodes"]
+    graph = {
+        node["id"]: {"type": node["type"], "inputs": [], "outputs": []}
+        for node in nodes
+    }
+    if len(graph) != len(nodes):
+        raise ValueError("Node identifiers must be unique.")
+
+    for connection in circuit_data["connections"]:
+        source = connection["source"]
+        target = connection["target"]
+        if source not in graph or target not in graph:
+            raise ValueError("A connection references a missing node.")
+        graph[source]["outputs"].append(target)
+        graph[target]["inputs"].append(source)
+
+    return graph
+
 
 def generate_truth_table(circuit_data):
-    nodes = circuit_data["nodes"]
-    connections = circuit_data["connections"]
-    current_input_combination = circuit_data["current_input_combination"]
+    graph = build_graph(circuit_data)
+    input_ids = sorted(
+        node_id for node_id, node in graph.items() if node["type"] == "INPUT"
+    )
+    current_values = {
+        item["nodeId"]: _normalise_input_value(item.get("value"))
+        for item in circuit_data.get("current_input_combination", [])
+    }
+    current_combo = tuple(current_values.get(node_id, 0) for node_id in input_ids)
 
-    # Step 1: Identify input nodes
-    input_nodes = [node for node in nodes if node["type"] == "INPUT"]
-    input_ids = sorted([node["id"] for node in input_nodes])
+    combinations = [current_combo]
+    combinations.extend(
+        combo
+        for combo in product((0, 1), repeat=len(input_ids))
+        if combo != current_combo
+    )
 
-    # Assign names: A, B, C...
-    input_names = (input_ids)
-    input_id_to_name = {id_: id_ for id_ in input_ids}
-
-    # Step 2: Generate all combinations of input values
-    input_combos = list(product([0, 1], repeat=len(input_ids)))
-
-    # Step 3: Build the graph
-    graph = {node["id"]: {
-        "type": node["type"],
-        "inputs": [],
-        "outputs": [],
-        "value": None
-    } for node in nodes}
-
-    for conn in connections:
-        graph[conn["source"]]["outputs"].append(conn["target"])
-        graph[conn["target"]]["inputs"].append(conn["source"])
-
-    # Find the output node
-    output_node = next((node["id"] for node in nodes if node["type"] == "OUTPUT"), None)
-
-    # Step 4: Loop through input combos and evaluate
     table = []
+    for index, combination in enumerate(combinations):
+        try:
+            output = evaluate_output(graph, input_ids, combination)
+        except (IndexError, TypeError, ValueError):
+            output = "?"
 
-    current_input_values = {
-    input["nodeId"]: int(input["value"][0]) if isinstance(input["value"], list) else int(input["value"])
-    for input in current_input_combination
-}
-
-    # We generate rows starting from the 'start' index, for 10 rows
-    try:
-        current_combo = [current_input_values.get(input_id, 0) for input_id in input_ids]
-        current_output_value = evaluate_output(graph, input_id_to_name, current_combo)
-        current_row = {
-        "row": current_combo + [current_output_value],
-        "highlighted": True
-        }
-        table.append(current_row)
-    except Exception as e:
-        print(f"⚠️ Evaluation error for current input combination: {e}")
-        current_combo = [current_input_values.get(input_id, 0) for input_id in input_ids]
-        row = {
-        "row": current_combo + ["?"]
-        }
+        row = {"row": [*combination, output]}
+        if index == 0:
+            row["highlighted"] = True
         table.append(row)
 
-    # Convert current combo to a tuple so we can compare easily
-    current_combo_tuple = tuple(current_input_values.get(input_id, 0) for input_id in input_ids)
+    return {"inputs": input_ids, "table": table}
 
-    for combo in input_combos:
-        if combo == current_combo_tuple:
-            continue  # Skip duplicate evaluation of current input combo
 
-        input_values = dict(zip(input_ids, combo))
-        try:
-            output_value = evaluate_output(graph, input_id_to_name, combo)
-            row = {
-            "row": list(combo) + [output_value]
-            }
-            table.append(row)
-        except Exception as e:
-            print(f"⚠️ Evaluation error for combo {combo}: {e}")
-            row = {
-                "row": list(combo) + ["?"]
-            }
-            table.append(row)
-
-    return {
-        "inputs": input_names,
-        "table": table
-    }
+def _normalise_input_value(value):
+    if isinstance(value, list):
+        value = value[0] if value else 0
+    return int(value)
 
 
 def compute_gate_output(gate_type, inputs):
-    if gate_type == "AND":
-        return inputs[0] & inputs[1]
-    elif gate_type == "OR":
-        return inputs[0] | inputs[1]
-    elif gate_type == "XOR":
-        return inputs[0] ^ inputs[1]
-    elif gate_type == "XNOR":
-        return int(not (inputs[0] ^ inputs[1]))
-    elif gate_type == "NAND":
-        return int(not (inputs[0] & inputs[1]))
-    elif gate_type == "NOR":
-        return int(not (inputs[0] | inputs[1]))
-    elif gate_type == "NOT":
-        return int(not inputs[0])
-    else:
+    operations = {
+        "AND": lambda: inputs[0] & inputs[1],
+        "OR": lambda: inputs[0] | inputs[1],
+        "XOR": lambda: inputs[0] ^ inputs[1],
+        "XNOR": lambda: int(not (inputs[0] ^ inputs[1])),
+        "NAND": lambda: int(not (inputs[0] & inputs[1])),
+        "NOR": lambda: int(not (inputs[0] | inputs[1])),
+        "NOT": lambda: int(not inputs[0]),
+    }
+    if gate_type not in operations:
         raise ValueError(f"Unknown gate type: {gate_type}")
+    return operations[gate_type]()
 
 
 def evaluate_output(graph, input_id_to_name, input_combo):
-    # Assign input values
-    for i, input_id in enumerate(input_id_to_name):
-        graph[input_id]['value'] = input_combo[i]
+    """Evaluate one input combination using dependency-aware graph traversal."""
+    input_ids = list(input_id_to_name)
+    if len(input_ids) != len(input_combo):
+        raise ValueError("Input combination does not match the circuit inputs.")
 
-    # Topological sort: process gates in input-to-output order
-    visited = set()
-    queue = deque([node_id for node_id in graph if graph[node_id]["type"] == "INPUT"])
+    output_ids = [
+        node_id for node_id, node in graph.items() if node["type"] == "OUTPUT"
+    ]
+    if len(output_ids) != 1:
+        raise ValueError("A circuit must contain exactly one output node.")
+
+    values = dict(zip(input_ids, input_combo))
+    queue = deque(input_ids)
 
     while queue:
         current = queue.popleft()
-        node = graph[current]
+        for target in graph[current]["outputs"]:
+            inputs = graph[target]["inputs"]
+            if target in values or any(source not in values for source in inputs):
+                continue
 
-        for out in node["outputs"]:
-            if graph[out]["type"] == "OUTPUT":
-                # We only process OUTPUT if all inputs are ready
-                ready_inputs = [graph[inp]["value"] for inp in graph[out]["inputs"]]
-                if None not in ready_inputs:
-                    graph[out]["value"] = ready_inputs[0]  # OUTPUT just takes input's value
+            node_type = graph[target]["type"]
+            if node_type == "OUTPUT":
+                if len(inputs) != 1:
+                    raise ValueError("The output node requires exactly one input.")
+                values[target] = values[inputs[0]]
             else:
-                input_vals = [graph[inp]["value"] for inp in graph[out]["inputs"]]
-                if None not in input_vals:
-                    gate_type = graph[out]["type"]
-                    graph[out]["value"] = compute_gate_output(gate_type, input_vals)
-                    queue.append(out)
+                values[target] = compute_gate_output(
+                    node_type, [values[source] for source in inputs]
+                )
+            queue.append(target)
 
-    # Find the output node and return its value
-    for node_id, node_data in graph.items():
-        if node_data["type"] == "OUTPUT":
-            return node_data["value"]
-
-    return None
+    output_id = output_ids[0]
+    if output_id not in values:
+        raise ValueError(
+            "The circuit cannot be evaluated; check for missing inputs or cycles."
+        )
+    return values[output_id]

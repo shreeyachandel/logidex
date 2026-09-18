@@ -1,51 +1,96 @@
-from flask import Flask, request, jsonify
-from logic.truth_table import generate_truth_table
-from logic.propositional_reduction import generate_propositional_reduction
-from logic.formula_to_circuit import formula_to_circuit
+"""Flask application and production frontend server for LogiDex."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+from typing import Callable
+
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-app = Flask(__name__)
-CORS(app)
+from backend.logic.formula_to_circuit import formula_to_circuit
+from backend.logic.propositional_reduction import generate_propositional_reduction
+from backend.logic.truth_table import generate_truth_table
 
-@app.route('/api/compute-truth-table', methods=['POST'])
-def compute_truth_table():
-    data = request.get_json()
-    print("Received circuit data:", data)  # Check what is being received
-    try:
-        result = generate_truth_table(data)
-        print("Generated truth table:", result)  # Check the result
-        return jsonify(result), 200
-    except Exception as e:
-        print("Error generating truth table:", str(e))  # Log error details
-        return jsonify({"error": str(e)}), 400
 
-@app.route('/api/compute-propositional-formula', methods=['POST'])
-def compute_propositional_formula():
-    data = request.get_json()
-    print("Received circuit data:", data)  # Check what is being received
-    try:
-        # For now, just return the received data (this will simulate the propositional reduction).
-        result = generate_propositional_reduction(data)
-        
-        print("Generated propositional formula:", result)  # Check the result
-        return jsonify(result), 200
-    except Exception as e:
-        print("Error generating propositional formula:", str(e))  # Log error details
-        return jsonify({"error": str(e)}), 400
-    
-@app.route('/api/create-circuit', methods=['POST'])
-def create_circuit():
-    try:
-        formula = request.json.get('formula')
+FRONTEND_BUILD_DIR = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+
+
+def create_app() -> Flask:
+    app = Flask(__name__, static_folder=None)
+    CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+    def run_computation(operation: Callable[[dict], dict]):
+        payload = request.get_json(silent=True)
+        if not isinstance(payload, dict):
+            return jsonify({"error": "A JSON circuit payload is required."}), 400
+
+        try:
+            return jsonify(operation(payload)), 200
+        except (KeyError, TypeError, ValueError) as error:
+            app.logger.info("Invalid computation request: %s", error)
+            return jsonify({"error": str(error)}), 400
+
+    @app.get("/api/health")
+    def health_check():
+        return jsonify({"status": "ok"}), 200
+
+    @app.post("/api/compute-truth-table")
+    def compute_truth_table():
+        return run_computation(generate_truth_table)
+
+    @app.post("/api/compute-propositional-formula")
+    def compute_propositional_formula():
+        return run_computation(generate_propositional_reduction)
+
+    @app.post("/api/create-circuit")
+    def create_circuit():
+        payload = request.get_json(silent=True)
+        formula = (
+            payload.get("formula", "").strip() if isinstance(payload, dict) else ""
+        )
         if not formula:
-            return jsonify({'error': 'Formula is required'}), 400
+            return jsonify({"error": "Formula is required."}), 400
 
-        circuit_data = formula_to_circuit(formula)
-        print(f"Circuit Data: {circuit_data}")  # Log the response
+        try:
+            return jsonify(formula_to_circuit(formula)), 200
+        except ValueError as error:
+            return jsonify({"error": str(error)}), 400
 
-        return jsonify(circuit_data)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_frontend(path: str):
+        """Serve the compiled React application, including client-side routes."""
+        if path.startswith("api/"):
+            return jsonify({"error": "API route not found."}), 404
 
-if __name__ == '__main__':
-    app.run(debug=True)
+        requested_file = FRONTEND_BUILD_DIR / path
+        if path and requested_file.is_file():
+            return send_from_directory(FRONTEND_BUILD_DIR, path)
+
+        index_file = FRONTEND_BUILD_DIR / "index.html"
+        if index_file.is_file():
+            return send_from_directory(FRONTEND_BUILD_DIR, "index.html")
+
+        return (
+            jsonify(
+                {
+                    "error": "Frontend build not found. Run `npm run build` from the repository root."
+                }
+            ),
+            404,
+        )
+
+    return app
+
+
+app = create_app()
+
+
+if __name__ == "__main__":
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "5050")),
+        debug=os.environ.get("FLASK_DEBUG") == "1",
+    )

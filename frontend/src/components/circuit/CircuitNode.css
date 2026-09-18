@@ -1,0 +1,141 @@
+.node-container {
+  align-items: center;
+  background-color: inherit;
+  border: 2px solid rgb(0 0 0 / 50%);
+  border-radius: 8px;
+  box-shadow: 2px 2px 5px rgb(0 0 0 / 10%);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100px;
+  justify-content: center;
+  overflow: visible;
+  padding: 8px;
+  position: relative;
+  width: 100px;
+}
+
+.node {
+  align-items: center;
+  border-radius: 6px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  width: 100%;
+}
+
+.node-image {
+  height: 50px;
+  width: 50px;
+}
+
+.node-label,
+.node-output {
+  font-size: 12px;
+  margin: 4px 0 0;
+  text-align: center;
+}
+
+.delete-button,
+.info-button {
+  border: 0;
+  cursor: pointer;
+  position: absolute;
+  z-index: 10;
+}
+
+.delete-button {
+  align-items: center;
+  background: #c62828;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  font-size: 14px;
+  height: 20px;
+  justify-content: center;
+  right: 4px;
+  top: 4px;
+  width: 20px;
+}
+
+.delete-button:hover {
+  background: #8e0000;
+}
+
+.info-button {
+  background: transparent;
+  bottom: 4px;
+  color: #555;
+  font-size: 18px;
+  right: 4px;
+}
+
+.handle-input,
+.handle-output {
+  background-color: #c62828;
+  border-radius: 50%;
+  height: 12px;
+  width: 12px;
+}
+
+.handle-input.connected,
+.handle-output.connected {
+  background-color: #2e7d32;
+}
+
+.true-value { background-color: #c8f7c5; }
+.false-value { background-color: #f7c5c5; }
+.transparent { background-color: transparent; }
+
+.node-backside {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  height: 100%;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+.node-backside h4,
+.node-backside p {
+  margin: 2px 0;
+}
+
+.truth-table-toggle {
+  align-items: center;
+  color: #555;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 11px;
+  gap: 4px;
+  position: relative;
+}
+
+.truth-table-popup {
+  background: white;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgb(0 0 0 / 20%);
+  left: 50%;
+  padding: 8px;
+  position: absolute;
+  top: 18px;
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+.mini-truth-table {
+  border-collapse: collapse;
+}
+
+.mini-truth-table td {
+  padding: 2px 8px;
+  text-align: center;
+}
+
+.mini-truth-table .output-column { background-color: lightblue; }
+.mini-truth-table .highlighted { font-weight: bold; }

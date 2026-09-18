@@ -1,95 +1,145 @@
+# LogiDex
 
-# Logic Gates Project
+**An interactive workspace for building logic circuits and moving between circuit diagrams, truth tables, and propositional formulas.**
 
-This is a web application for simulating and interacting with logic gates. It allows users to create circuits, visualize logic gate behavior, and interact with a propositional formula system.
+LogiDex turns abstract Boolean logic into something learners can manipulate. Users can draw circuits from seven standard gate types or enter a formula and generate a neatly arranged circuit automatically. The same circuit can then be explored as a live signal flow, a filterable truth table, or a step-by-step CNF/DNF reduction.
 
-## Requirements
+![LogiDex generating a circuit from a propositional formula](docs/images/logidex-demo.png)
 
-- Python 3.x
-- Node.js
-- npm (Node Package Manager)
+> This repository is being prepared as a public portfolio release of my final-year BSc Computer Science project at King's College London.
 
-## Setup Instructions
+## Why I built it
 
-Follow the steps below to set up and run the project.
+Students often encounter propositional logic as symbols and manual calculations before they can develop an intuition for how the values move through a circuit. LogiDex was designed around three goals: experimental freedom, educational explanation, and accessibility for both beginners and more experienced users.
 
-### 1. **Backend Setup**
+I designed the interface, implemented the React application and Flask API, built the circuit and formula algorithms, and evaluated the finished tool through automated and user testing.
 
-1. Open a terminal window.
-2. Navigate to the project directory.
-3. Navigate to the `backend` folder:
+## What it can do
 
-   ```bash
-   cd backend
-   ```
+- Build circuits interactively with `AND`, `OR`, `NOT`, `NAND`, `NOR`, `XOR`, and `XNOR` gates.
+- Toggle inputs and see values propagate through colour-coded nodes in real time.
+- Inspect a gate's behaviour through an embedded mini truth table.
+- Convert formulas such as `A AND (B OR NOT C)` into automatically arranged circuit diagrams.
+- Validate incomplete or invalid circuits before computation and return specific guidance.
+- Generate complete truth tables, highlight the active input combination, filter columns, and progressively reveal large results.
+- Derive a propositional formula from a circuit and show CNF and DNF transformations step by step.
+- Guide first-time users through the interface with an interactive tutorial.
 
-4. Create a virtual environment:
+## Architecture
 
-   ```bash
-   virtualenv venv
-   ```
+```mermaid
+flowchart LR
+    User["Learner"] --> React["React interface"]
+    React --> Canvas["Interactive circuit canvas"]
+    React --> API["Flask REST API"]
+    API --> Parser["Formula parser and circuit generator"]
+    API --> Truth["Graph traversal and truth tables"]
+    API --> AST["AST-based CNF/DNF reduction"]
+    Parser --> React
+    Truth --> React
+    AST --> React
+```
 
-5. Activate the virtual environment:
+The frontend owns immediate interaction, canvas state, visual feedback, filtering, and presentation. The Python backend exposes three stateless endpoints for formula-to-circuit parsing, truth-table generation, and propositional reduction. The production build is served by the same Flask service, so the complete application can be deployed as one container.
 
-   - On macOS/Linux:
+## Run locally
 
-     ```bash
-     source venv/bin/activate
-     ```
+### Requirements
 
-   - On Windows:
+- Python 3.10+
+- Node.js 20+
+- npm
 
-     ```bash
-     .\venv\Scripts\activate
-     ```
+Install everything from the repository root:
 
-6. Install the required dependencies:
+```bash
+npm run setup
+```
 
-   ```bash
-   pip3 install -r requirements.txt
-   ```
+Then start the React development server and Flask API together:
 
-7. To run the backend server, execute:
+```bash
+npm start
+```
 
-   ```bash
-   python app.py
-   ```
+Open `http://localhost:3000`. Press `Ctrl+C` once to stop both processes.
 
-8. To run tests for the backend, use:
+### Production-style local run
 
-   ```bash
-   python run_tests.py
-   ```
+```bash
+npm run build
+npm run serve
+```
 
-### 2. **Frontend Setup**
+Open `http://localhost:5050`. Flask will serve both the API and the compiled React application.
 
-1. Open a new terminal window.
-2. Navigate to the `frontend` folder:
+## Project structure
 
-   ```bash
-   cd frontend
-   ```
+```text
+backend/             Flask API, logic algorithms, and Python tests
+frontend/src/api/    Typed-by-convention API boundary
+frontend/src/components/
+                     Focused interface components
+frontend/src/config/ Gate definitions and shared constants
+frontend/src/hooks/  Circuit editor state and interactions
+frontend/src/utils/  Validation, serialization, and layout algorithms
+scripts/             Cross-platform setup and run commands
+```
 
-3. Install the frontend dependencies:
+## Tests
 
-   ```bash
-   npm install --legacy-peer-deps
-   ```
+The repository contains **45 backend and frontend tests** covering:
 
-4. Install the required versions of `ajv` and `ajv-keywords`:
+- Formula parsing, precedence, nesting, and invalid syntax
+- Formula-to-circuit generation
+- Gate evaluation and truth-table generation
+- AST construction and Boolean simplification
+- CNF and DNF transformation steps
+- End-to-end circuit/formula workflows
+- Circuit validation, connection ordering, and generated layout
 
-   ```bash
-   npm install ajv@6.12.6 --legacy-peer-deps
-   npm install ajv-keywords@3.1.0 --legacy-peer-deps
-   ```
+Run them from the repository root:
 
-5. To start the frontend application, execute:
+```bash
+npm test
+```
 
-   ```bash
-   npm start
-   ```
+## Technical highlights
 
-### 3. **Access the Application**
+### Formula-to-circuit conversion
 
-- Once both the backend server and the frontend app are running, open your web browser (preferably Chrome).
-- Navigate to `http://localhost:3000` to view the app and interact with the functionality.
+A recursive-descent parser validates expressions, respects parentheses and operator precedence, and converts formulas into nodes and connections. A breadth-first layout pass assigns each generated node to a logical depth, producing a readable left-to-right circuit.
+
+### Truth-table computation
+
+The backend constructs a directed graph from the circuit and evaluates every binary input combination using dependency-aware traversal. The frontend highlights the user's active combination and supports compound column filters without storing user data on the server.
+
+### Explainable normal-form reduction
+
+The propositional-reduction engine represents formulas as an abstract syntax tree. It applies De Morgan's laws, simplification, and distribution while preserving the surrounding tree context, allowing the interface to display complete before-and-after formulas for each CNF or DNF step.
+
+## Evaluation
+
+The original university project included iterative usability testing with 10 participants. In that evaluation, interactions were observed at approximately 150-200 ms, circuits with up to 50 nodes were exercised without noticeable lag, and participant feedback informed the final tutorial, validation messages, layout, and accessibility improvements.
+
+The current portfolio release has also been checked with the full automated test suite and an optimised frontend production build.
+
+## Technology
+
+`React` · `Vite` · `React Flow` · `Material UI` · `JavaScript` · `Python` · `Flask` · `REST APIs` · `Graph traversal` · `Abstract syntax trees` · `Docker`
+
+## Privacy and academic context
+
+LogiDex does not require accounts or a database. Circuit information is processed for the current request and is not intentionally persisted by the backend. The original dissertation PDF is deliberately excluded from this public repository because its cover contains a student identifier; a redacted technical report can be added separately.
+
+## Future work
+
+- Multiple circuit outputs and reusable custom gates
+- Multi-input compound gates
+- A dedicated guided-learning mode with answer verification
+- High-contrast and dark themes
+- Broader end-to-end interaction and accessibility coverage
+
+## Author
+
+Created by [Shreeya Chandel](https://www.linkedin.com/in/shreeyachandel/).

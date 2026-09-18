@@ -1,27 +1,9 @@
-// src/components/WelcomeModal.js
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Dialog, DialogTitle, DialogContent, Button, Typography } from "@mui/material";
 
-
-const WelcomeModal = ({ onStartTutorial }) => {
-  const [open, setOpen] = useState(false);
-  
-  const handleStartTutorial = () => {
-    console.log("typeof onStartTutorial", typeof onStartTutorial);
-      onStartTutorial(); // this should now work
-    };
-
-  useEffect(() => {
-    setOpen(true); // Force modal to open on page load
-  }, []);
-
-  const handleClose = () => {
-    localStorage.setItem("seenWelcomeModal", "true");
-    setOpen(false);
-  };
-
+const WelcomeModal = ({ onClose, onStartTutorial, open }) => {
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>👋 Welcome to LogiDex</DialogTitle>
       <DialogContent>
         <Typography variant="body1" sx={{ marginBottom: "1rem" }}>
@@ -39,10 +21,10 @@ const WelcomeModal = ({ onStartTutorial }) => {
           <li>Generate truth tables and analyse them</li>
         </ul>
 
-        <Button variant="contained" onClick={handleStartTutorial} sx={{ marginRight: "1rem" }}>
+        <Button variant="contained" onClick={onStartTutorial} sx={{ marginRight: "1rem" }}>
           Start Tutorial
         </Button>
-        <Button variant="outlined" onClick={handleClose}>
+        <Button variant="outlined" onClick={onClose}>
           Close
         </Button>
       </DialogContent>

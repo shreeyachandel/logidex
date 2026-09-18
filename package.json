@@ -1,0 +1,22 @@
+{
+  "name": "logidex",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive logic-circuit learning workspace",
+  "scripts": {
+    "setup": "python3 scripts/setup.py",
+    "start": "python3 scripts/dev.py",
+    "dev": "npm start",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "python3 backend/run_tests.py",
+    "test:frontend": "npm --prefix frontend test",
+    "build": "npm --prefix frontend run build",
+    "check": "npm test && npm run build",
+    "serve": "python3 scripts/serve.py"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10",
+    "python": ">=3.10"
+  }
+}

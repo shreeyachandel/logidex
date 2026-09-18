@@ -1,85 +1,85 @@
-// src/utils/validateCircuit.js
+import { NODE_TERMINALS } from '../config/gates.js';
 
-export const validateCircuit = (nodes, connections) => {
-    console.log("🔍 Validating circuit...");
-  
-    const graph = {};
-    const reverseGraph = {};
-    let outputNode = null;
-  
-    // Build graph and reverseGraph
-    nodes.forEach(node => {
-      graph[node.id] = {
-        type: node.type,
-        inputs: [],
-        outputs: [],
-        value: node.data?.inputValues ?? null
-      };
-      reverseGraph[node.id] = [];
-      if (node.type === "OUTPUT") {
-        if (outputNode) {
-          return { valid: false, error: "❌ Circuit must have only one output node!" };
-        }
-        outputNode = node.id;
-      }
+const invalid = (error) => ({ valid: false, error });
+
+export function validateCircuit(nodes, connections) {
+  if (nodes.length === 0) return invalid('Add some nodes before computing a result.');
+
+  const outputNodes = nodes.filter(({ type }) => type === 'OUTPUT');
+  if (outputNodes.length !== 1) {
+    return invalid(`The circuit must contain exactly one output node; found ${outputNodes.length}.`);
+  }
+
+  const graph = Object.fromEntries(
+    nodes.map((node) => [node.id, { inputs: [], outputs: [], node }])
+  );
+  const connectedHandles = new Set();
+
+  for (const connection of connections) {
+    const { source, sourceHandle, target, targetHandle } = connection;
+    if (!graph[source] || !graph[target]) {
+      return invalid('The circuit contains a connection to a missing node.');
+    }
+
+    const handleKey = `${target}:${targetHandle || 'input-0'}`;
+    if (connectedHandles.has(handleKey)) {
+      return invalid('Each gate input can accept only one connection.');
+    }
+    connectedHandles.add(handleKey);
+    graph[source].outputs.push(target);
+    graph[target].inputs.push(source);
+  }
+
+  const outputId = outputNodes[0].id;
+  if (graph[outputId].inputs.length !== 1) {
+    return invalid(`The output node requires one input; found ${graph[outputId].inputs.length}.`);
+  }
+  if (graph[outputId].outputs.length > 0) {
+    return invalid('The output node cannot connect to another node.');
+  }
+
+  const reachable = new Set();
+  const queue = [outputId];
+  while (queue.length > 0) {
+    const nodeId = queue.shift();
+    if (reachable.has(nodeId)) continue;
+    reachable.add(nodeId);
+    queue.push(...graph[nodeId].inputs);
+  }
+  if (nodes.some(({ id }) => !reachable.has(id))) {
+    return invalid('Every node must contribute to the output. Remove or connect disconnected nodes.');
+  }
+
+  for (const node of nodes) {
+    if (node.type === 'INPUT' && node.data?.inputValues?.[0] == null) {
+      return invalid('Select a value for every input node.');
+    }
+
+    const requiredInputs = NODE_TERMINALS[node.type]?.inputs;
+    if (requiredInputs === undefined) return invalid(`Unknown node type: ${node.type}.`);
+    if (graph[node.id].inputs.length !== requiredInputs) {
+      return invalid(
+        `${node.type} requires ${requiredInputs} input${requiredInputs === 1 ? '' : 's'}; ` +
+        `found ${graph[node.id].inputs.length}.`
+      );
+    }
+  }
+
+  const inDegree = Object.fromEntries(
+    Object.entries(graph).map(([id, node]) => [id, node.inputs.length])
+  );
+  const ready = Object.keys(inDegree).filter((id) => inDegree[id] === 0);
+  let processed = 0;
+
+  while (ready.length > 0) {
+    const nodeId = ready.shift();
+    processed += 1;
+    graph[nodeId].outputs.forEach((target) => {
+      inDegree[target] -= 1;
+      if (inDegree[target] === 0) ready.push(target);
     });
-  
-    if (!outputNode) {
-      return { valid: false, error: "❌ No output node found in the circuit!" };
-    }
-  
-    connections.forEach(({ source, target }) => {
-      graph[source].outputs.push(target);
-      graph[target].inputs.push(source);
-      reverseGraph[target].push(source);
-    });
-  
-    // 1️⃣ Check output node has exactly one input
-    if (graph[outputNode].inputs.length !== 1) {
-      return {
-        valid: false,
-        error: `❌ Output node must have exactly one input, but found ${graph[outputNode].inputs.length}!`
-      };
-    }
-  
-    // 2️⃣ Check all nodes are connected
-    const visited = new Set();
-    const queue = [outputNode];
-    while (queue.length > 0) {
-      const node = queue.shift();
-      visited.add(node);
-      reverseGraph[node].forEach(parent => {
-        if (!visited.has(parent)) queue.push(parent);
-      });
-    }
-  
-    if (nodes.some(node => !visited.has(node.id))) {
-      return { valid: false, error: "❌ Some nodes are disconnected from the output node!" };
-    }
-  
-    // 3️⃣ Check all input nodes have selected values
-    for (const node of nodes) {
-      const inputVal = node.data?.inputValues?.[0];
-      if (node.type === "INPUT" && (inputVal === null || inputVal === undefined)) {
-        return { valid: false, error: "❌ Please select a value for your input node(s)!" };
-      }
-    }
-  
-    // 4️⃣ Check all gates have correct number of inputs
-    for (const nodeId in graph) {
-      const node = graph[nodeId];
-      if (node.type !== "INPUT" && node.type !== "OUTPUT") {
-        const requiredInputs = node.type === "NOT" ? 1 : 2;
-        if (node.inputs.length !== requiredInputs) {
-          return {
-            valid: false,
-            error: `❌ ${node.type} gate does not have enough inputs. Required: ${requiredInputs}, Found: ${node.inputs.length}.`
-          };
-        }
-      }
-    }
-  
-    console.log("✅ Circuit is valid!");
-    return { valid: true };
-  };
-  
+  }
+
+  if (processed !== nodes.length) return invalid('The circuit contains a cycle.');
+  return { valid: true };
+}

@@ -22,8 +22,9 @@ const TruthTable = ({ data }) => {
   const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    // Ensures useEffect is not applied to the search string unless submitted
-    if (!data) return; // Exit early if no data available
+    setVisibleCount(10);
+    setAnchorEls({});
+    setFilters({});
   }, [data]);
 
   const totalColumns = data?.inputs?.length + 1;
@@ -59,17 +60,17 @@ const TruthTable = ({ data }) => {
   };
 
   const filteredTable = Object.entries(filters).length
-    ? data?.table?.filter((rowObj) =>
+    ? (data?.table || []).filter((rowObj) =>
         Object.entries(filters).every(([colIndex, value]) => {
           return rowObj.row[parseInt(colIndex)] === value;
         })
       )
-    : data?.table;
+    : (data?.table || []);
 
-  const visibleRows = filteredTable?.slice(0, visibleCount);
-  const totalRows = data?.table?.length;
-  const filteredCount = filteredTable?.length;
-  const trueCount = filteredTable?.filter(
+  const visibleRows = filteredTable.slice(0, visibleCount);
+  const totalRows = data?.table?.length || 0;
+  const filteredCount = filteredTable.length;
+  const trueCount = filteredTable.filter(
     (row) => row.row[totalColumns - 1] === 1
   ).length;
   const falseCount = filteredCount - trueCount;

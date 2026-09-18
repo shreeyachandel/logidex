@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, Typography } from "@mui/material";
-import { validateCircuit } from "../utils/validateCircuit";
-import PropositionalComputation from "../components/PropositionalComputation"
+import { validateCircuit } from "../../utils/validateCircuit";
+import PropositionalComputation from "../PropositionalComputation"
 import "./styles.css";
-const apiUrl = process.env.REACT_APP_API_BASE_URL;
+import { computePropositionalReduction } from "../../api/circuitApi";
+import { serializeCircuit } from "../../utils/circuitData";
 
 const PropositionalReduction = ({ elements, edges, resetSignal }) => {
   const [propositionalData, setPropositionalData] = useState(null);
@@ -31,37 +32,11 @@ const PropositionalReduction = ({ elements, edges, resetSignal }) => {
       return;
     }
 
-    // Creating the current_input_combination with input node values (0 or 1)
-
-    const circuitData = {
-      nodes: elements.map((node) => ({
-        id: node.id,
-        type: node.type,
-        inputValues: node.data.inputValues || [],
-      })),
-      connections: edges.map((edge) => ({
-        source: edge.source,
-        target: edge.target,
-      })),
-    };
-
-    console.log("📤 Sending circuit data:", circuitData);
-
     try {
-      const response = await fetch(`${apiUrl}/api/compute-propositional-formula`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(circuitData),
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch");
-
-      const data = await response.json();
-      console.log("✅ Received propositional formula data:", data);
+      const data = await computePropositionalReduction(serializeCircuit(elements, edges));
       setPropositionalData(data);
-    } catch (error) {
-      setError("Error fetching propositional formula data.");
-      console.error("❌ API Error:", error);
+    } catch (requestError) {
+      setError(requestError.message || "Unable to reduce the propositional formula.");
     }
   };
 
@@ -72,7 +47,6 @@ const PropositionalReduction = ({ elements, edges, resetSignal }) => {
       </Typography>
 
 
-      {/* Align the button on the left */}
       <div style={{ display: "flex", justifyContent: "flex-start", margin: "1.5rem 0" }}>
         <Button 
           onClick={handleCompute} 

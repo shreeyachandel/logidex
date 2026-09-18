@@ -1,0 +1,12 @@
+.git
+.gitignore
+.DS_Store
+Undergrad Thesis.pdf
+frontend/node_modules
+frontend/build
+frontend/dist
+backend/__pycache__
+backend/.pytest_cache
+backend/venv
+backend/.venv
+*.pyc

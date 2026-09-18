@@ -1,23 +1,26 @@
-import unittest
-import sys
-import os
+"""Run LogiDex's backend unit and integration test suite."""
 
-def run_all_tests():
-    """Run all tests in the backend/tests directory"""
-    # Add the project root directory to sys.path so that imports work
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    sys.path.insert(0, project_root)
-    
-    # Discover and run all tests
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover('tests', pattern='test_*.py')
-    
-    # Run the tests
-    test_runner = unittest.TextTestRunner(verbosity=2)
-    result = test_runner.run(test_suite)
-    
-    # Return appropriate exit code
+from __future__ import annotations
+
+import sys
+import unittest
+from pathlib import Path
+
+
+BACKEND_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BACKEND_DIR.parent
+
+
+def run_all_tests() -> int:
+    sys.path.insert(0, str(PROJECT_ROOT))
+    suite = unittest.defaultTestLoader.discover(
+        str(BACKEND_DIR / "tests"),
+        pattern="test_*.py",
+        top_level_dir=str(PROJECT_ROOT),
+    )
+    result = unittest.TextTestRunner(verbosity=2).run(suite)
     return 0 if result.wasSuccessful() else 1
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     sys.exit(run_all_tests())
