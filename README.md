@@ -2,6 +2,8 @@
 
 **An interactive workspace for building logic circuits and moving between circuit diagrams, truth tables, and propositional formulas.**
 
+**[Try LogiDex live →](https://logidex.vercel.app)**
+
 LogiDex turns abstract Boolean logic into something learners can manipulate. Users can draw circuits from seven standard gate types or enter a formula and generate a neatly arranged circuit automatically. The same circuit can then be explored as a live signal flow, a filterable truth table, or a step-by-step CNF/DNF reduction.
 
 ![LogiDex generating a circuit from a propositional formula](docs/images/logidex-demo.png)
