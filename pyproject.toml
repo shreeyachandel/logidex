@@ -1,3 +1,14 @@
+[project]
+name = "logidex"
+version = "1.0.0"
+description = "Interactive logic-circuit learning workspace"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask==3.1.0",
+    "flask-cors==5.0.1",
+    "gunicorn==23.0.0",
+]
+
 [tool.black]
 line-length = 88
 target-version = ["py310"]
