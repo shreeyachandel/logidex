@@ -24,6 +24,7 @@ npm-debug.log*
 .DS_Store
 .idea/
 .vscode/
+.vercel/
 
 # The source dissertation contains a student identifier.
 Undergrad Thesis.pdf

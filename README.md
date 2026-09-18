@@ -42,6 +42,12 @@ flowchart LR
 
 The frontend owns immediate interaction, canvas state, visual feedback, filtering, and presentation. The Python backend exposes three stateless endpoints for formula-to-circuit parsing, truth-table generation, and propositional reduction. The production build is served by the same Flask service, so the complete application can be deployed as one container.
 
+## Deploy
+
+The repository includes deployment configuration for both Vercel and Render. On Vercel, import the repository with the repository root selected; `vercel.json` installs and builds the Vite frontend before the root Flask entry point serves the application and API from one deployment. No separate frontend or backend project is required.
+
+The included `Dockerfile` and `render.yaml` provide the equivalent container-based deployment path on Render.
+
 ## Run locally
 
 ### Requirements
@@ -84,6 +90,8 @@ frontend/src/config/ Gate definitions and shared constants
 frontend/src/hooks/  Circuit editor state and interactions
 frontend/src/utils/  Validation, serialization, and layout algorithms
 scripts/             Cross-platform setup and run commands
+app.py               Vercel Flask entry point
+vercel.json          Vercel build configuration
 ```
 
 ## Tests
